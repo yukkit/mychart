@@ -25,7 +25,7 @@ spec:
               - matchExpressions:
                   - key: {{ .Values.stream.nodeAffinity.key }}
                     operator: In
-                    values: [{{ .Values.stream.nodeAffinity.values }}]
+                    values: [{{ .Values.stream.nodeAffinity.values | quote }}]
       volumes:
         - name: stream-config-vol
           configMap:
@@ -33,7 +33,7 @@ spec:
         {{- if .Values.nfs.create }}
         - name: nfs-client
           persistentVolumeClaim:
-            claimName: {{ .Values.nfs.label.value }}
+            claimName: {{ include "linkoopdb.name" . }}-nfs
         {{- end }}
         {{- if $.Values.hadoop.dependecy }}
         {{- range $key, $value := .Values.hadoop.confPath }}

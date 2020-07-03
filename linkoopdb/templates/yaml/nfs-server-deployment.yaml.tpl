@@ -5,7 +5,7 @@ metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
 {{ include "linkoopdb.labels" . | indent 4 }}
-    app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 4 }}
 spec:
   clusterIP: None
   ports:
@@ -14,7 +14,7 @@ spec:
     protocol: TCP
   selector:
 {{ include "linkoopdb.labels" . | indent 4 }}
-    app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 4 }}
   type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
@@ -23,24 +23,24 @@ metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
 {{ include "linkoopdb.labels" . | indent 4 }}
-    app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
 {{ include "linkoopdb.labels" . | indent 6 }}
-      app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 6 }}
   template:
     metadata:
       labels:
 {{ include "linkoopdb.labels" . | indent 8 }}
-        app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 8 }}
     spec:
       nodeName: {{ .Values.nfs.node }}
       volumes:
       - name: nfs
         hostPath:
-          path: {{ .Values.nfs.path }}
+          path: {{ .Values.nfs.path | default .Values.shareDisk }}
           type: DirectoryOrCreate
       - name: exports-config
         configMap:

@@ -1,22 +1,22 @@
-1. Get the application URL by running these commands:
-
-{{- if .Values.nfs.create }}
-cat << HERE | kubectl apply -f -
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Values.nfs.label.value }}
-  labels:
-    {{ .Values.nfs.label.key}}: {{ .Values.nfs.label.value }}
-spec:
-  capacity:
-    storage: {{ .Values.nfs.storage }}
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: {{ .Values.nfs.reclaimPolicy }}
-  storageClassName: nfs
-  nfs:
-    path: /
-    server: {{ .Values.nfs.node }}
-HERE
+{{- if .Values.hadoop.dependecy }}
+{{ include "linkoopdb.name" . }} Prepare
+* Create hadoop configMap
+    {{- range $key, $value := .Values.hadoop.confPath }}
+    {{- $name := (printf "%s-hadoop-%s" (include "linkoopdb.name" $) $key) }}
+    {{- $cm := (lookup "v1" "ConfigMap" $.Release.Namespace $name) }}
+    {{- if empty $cm }}
+    kubectl create configmap {{ include "linkoopdb.name" $ }}-hadoop-{{ $key }} --from-file={{ $value }} --namespace={{ $.Release.Namespace }}
+    {{- end }}
+    {{- end }}
 {{- end }}
+
+{{ include "linkoopdb.name" . }} Startup
+* Watch {{ include "linkoopdb.name" . }} up and running
+    watch kubectl get pods --namespace {{ .Release.Namespace }} -o wide
+* List services in the {{ include "linkoopdb.name" . }}
+    kubectl get services --namespace {{ .Release.Namespace }}
+
+{{ include "linkoopdb.name" . }} Access
+* Access {{ include "linkoopdb.name" . }} using the jdbc api or ldb-client
+    url: {{ include  "ldb.database.uris" . }}
+

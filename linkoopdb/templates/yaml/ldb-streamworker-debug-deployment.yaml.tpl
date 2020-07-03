@@ -25,7 +25,7 @@ spec:
               - matchExpressions:
                   - key: {{ .Values.stream.nodeAffinity.key }}
                     operator: In
-                    values: [{{ .Values.stream.nodeAffinity.values }}]
+                    values: [{{ .Values.stream.nodeAffinity.values | quote }}]
       hostNetwork: {{ default false .Values.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
       hostPID: {{ default false .Values.hostNetwork }}
@@ -43,7 +43,7 @@ spec:
         {{- if .Values.nfs.create }}
         - name: nfs-client
           persistentVolumeClaim:
-            claimName: {{ .Values.nfs.label.value }}
+            claimName: {{ include "linkoopdb.name" . }}-nfs
         {{- end }}
         {{- if $.Values.hadoop.dependecy }}
         {{- range $key, $value := .Values.hadoop.confPath }}
@@ -68,7 +68,7 @@ spec:
               while ${notReady}; do
                 for item in ${server_cluster_arr[@]}; do
                   item_arr=(${item//:/ })
-                  server_addr=${item_arr[1]}:{{ $.Values.server.ports.regPort }}
+                  server_addr=${item_arr[1]}:{{ $.Values.server.ports.regPort | default 17771 }}
                   [ "$(curl -s ${server_addr}/dbstatus/isready)" == "true" ] && notReady=false
                   [ "${notReady}" == "false" ] && break
                 done
@@ -88,7 +88,7 @@ spec:
               mountPath: /opt/flink-yarn/session
             {{- if .Values.nfs.create }}
             - name: nfs-client
-              mountPath: {{ .Values.nfs.mountPath }}
+              mountPath: {{ .Values.nfs.mountPath | default "/fsshare"  }}
             {{- end }}
             {{- if .Values.hadoop.dependecy }}
             {{- range $key, $value := .Values.hadoop.confPath }}
@@ -99,7 +99,7 @@ spec:
           args:
             - stream-worker
           ports:
-            - containerPort: {{ .Values.stream.streamWorker.ports.workerPort }}
+            - containerPort: {{ .Values.stream.streamWorker.ports.workerPort | default 7778 }}
               name: worker-port
           env:
             - name: LINKOOPDB_STREAM_LOCAL_WORK_RUN_MODE

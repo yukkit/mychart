@@ -24,7 +24,7 @@ ldb.worker.batch.master.extraJavaOptions={{ .Values.batchWorker.config.jvmOpts }
 ldb.worker.hiveMetastoreUris={{ .Values.server.config.hiveMetastoreUris }}
 ldb.worker.enableHiveSupport={{ .Values.server.config.enableHiveSupport | default false }}
 ldb.server.metastore.type={{ .Values.metastore.type | default "LINKOOPDB" }}
-{{- if eq "LINKOOPDB" .Values.metastore.type }}
+{{- if eq "LINKOOPDB" (.Values.metastore.type | default "LINKOOPDB") }}
 ldb.server.metastore.uris={{ include "ldb.metastore.uris" . }}
 ldb.server.metastore.username={{ .Values.metastore.config.username | default "admin" }}
 ldb.server.metastore.password={{ .Values.metastore.config.password | default "123456" }}
@@ -38,7 +38,7 @@ ldb.server.kerberos.keytab={{ .Values.server.config.keytab }}
 ldb.server.workerRegister.port={{ .Values.server.ports.regPort | default 17771 }}
 ldb.server.dataSync.port={{ .Values.server.ports.dataSyncPort | default 33041 }}
 {{- if eq "single" (include "database.mode" .) }}
-ldb.server.host={{ include "linkoopdb.name" . }}-database-0
+ldb.server.host={{ include "linkoopdb.name" . }}-database-0.{{ include "linkoopdb.name" . }}-database
 {{- end }}
 ldb.server.jdbc.port={{ .Values.server.ports.jdbcPort | default 9105 }}
 ldb.server.ha.nodelist={{ include "ldb.database.ha.nodelist" . | trimAll "," }}

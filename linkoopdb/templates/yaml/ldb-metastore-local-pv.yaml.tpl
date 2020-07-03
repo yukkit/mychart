@@ -1,4 +1,4 @@
-{{- if eq .Values.metastore.type "LINKOOPDB" }}
+{{- if eq "LINKOOPDB" (.Values.metastore.type | default "LINKOOPDB") }}
 {{- range $node := (regexSplit "\\s+" (include "metastore.nodes" $ ) -1) }}
 {{- $pv_name := printf "%s-%s" (include "metastore.pv.prefix" $) $node }}
 {{- $pv := (lookup "v1" "PersistentVolume" "" $pv_name) }}
@@ -16,7 +16,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: {{ include "metastore.pv.prefix" $ }}-local-storage
   local:
     path: {{ $.Values.shareDisk }}

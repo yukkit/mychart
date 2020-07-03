@@ -13,7 +13,7 @@ image:
 shareDisk: /tmp/linkoopdb
 
 hadoop:
-  dependecy: false
+  dependecy: true
   user: hdfs
   confPath:
     conf: /etc/hadoop/conf
@@ -25,15 +25,12 @@ license:
   port: 7700
 
 nfs:
-  create: false
-  mountPath: /fsshare
-  storage: 100Gi
-  path: /tmp/nfs
-  node: node61
-  reclaimPolicy: Retain
-  label:
-    key: pv
-    value: pvc-001
+  create: true
+  mountPath:
+  storage:
+  path:
+  node:
+  reclaimPolicy:
 
 #ldbDist:
 #  - domain:
@@ -50,8 +47,8 @@ shuffleService:
     requests: {}
 
 metastore:
-  type: LINKOOPDB
-  replicas: 3
+  type:
+  replicas:
   nodeAffinity:
     key: linkoopdb/metaserver
     value: true
@@ -64,7 +61,7 @@ metastore:
     username:
     password:
     driver:
-    batchWorkerUiPort: 30402
+    batchWorkerUiPort:
     jvmOpts:
     resources:
       master:
@@ -78,22 +75,21 @@ metastore:
     requests: {}
 
 server:
-  replicas: 3
-  mode: single
+  replicas:
   nodeAffinity:
     key: linkoopdb/dbserver
     value: true
   ports:
-    jdbcPort: 9105
-    regPort: 17771
-    atomixPort: 5001
-    syncPort: 33041
+    jdbcPort:
+    regPort:
+    atomixPort:
+    syncPort:
   config:
-    storageBase: ldb:///tmp/linkoopdb
-    batchWorkerJars: hdfs:///user/ldb/spark
-    sqlLogEnabled: false
-    sqlHistoryEnabled: false
-    batchWorkerUiPort: 30401
+    storageBase:
+    batchWorkerJars:
+    sqlLogEnabled:
+    sqlHistoryEnabled:
+    batchWorkerUiPort:
     jvmOpts:
     hiveMetastoreUris:
     enableHiveSupport:
@@ -103,7 +99,7 @@ server:
     requests: {}
 
 batchWorker:
-  launcher: k8s
+  launcher:
   resources:
     cluster:
       queue:
@@ -125,20 +121,19 @@ batchWorker:
 stream:
   create: true
   nodeAffinity:
-    key: kubernetes.io/hostname
-    values: node61,node62,node63
+    key: linkoopdb/stream
+    values: true
   config:
-    yarn.properties-file.location: file:///opt/flink-yarn/session
   streamWorker:
     kafkaLibPath:
     libPath:
     ports:
-      workerPort: 7778
+      workerPort:
     resources:
       limits: {}
       requests: {}
   debugWorker:
-    replicas: 2
+    replicas:
     ports:
       workerPort:
     resources:
@@ -146,12 +141,12 @@ stream:
       requests: {}
   jobmanager:
     ports:
-      ui: 30101
+      ui:
     resources:
       limits: {}
       requests: {}
   taskmanager:
-    replicas: 1
+    replicas:
     resources:
       limits: {}
       requests: {}

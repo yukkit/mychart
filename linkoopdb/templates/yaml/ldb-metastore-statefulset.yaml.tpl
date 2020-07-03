@@ -1,4 +1,4 @@
-{{- if eq .Values.metastore.type "LINKOOPDB" }}
+{{- if eq "LINKOOPDB" (.Values.metastore.type | default "LINKOOPDB") }}
 apiVersion: v1
 kind: Service
 metadata:

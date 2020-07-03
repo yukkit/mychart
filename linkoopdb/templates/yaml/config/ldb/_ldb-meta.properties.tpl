@@ -9,7 +9,7 @@ ldb.storage.pallas.shardDuplicateNumber=1
 ldb.storage.pallas.minShardDuplicateNumber=1
 {{- end }}
 ldb.server.mode={{ include "metastore.mode" . }}
-ldb.storage.base={{ .Values.server.config.storageBase | default "ldb:///tmp/linkoopdb/" }}/metastore
+ldb.storage.base={{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/metastore
 ldb.storage.launcher=k8s
 ldb.worker.launcher=k8s
 ldb.worker.batch.master.extraJavaOptions={{ .Values.metastore.config.jvmOpts }}
@@ -20,7 +20,7 @@ ldb.worker.batch.k8s.container.image.pullPolicy={{ .Values.image.pullPolicy }}
 
 ldb.server.workerRegister.port=17772
 {{- if eq "single" (include "metastore.mode" .) }}
-ldb.server.host={{ include "linkoopdb.name" . }}-metastore-0
+ldb.server.host={{ include "linkoopdb.name" . }}-metastore-0.{{ include "linkoopdb.name" . }}-metastore
 {{- end }}
 ldb.server.jdbc.port=9106
 ldb.server.ha.nodelist={{ include "ldb.metastore.ha.nodelist" . | trimAll "," }}

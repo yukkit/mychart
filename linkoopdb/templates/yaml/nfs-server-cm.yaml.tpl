@@ -8,5 +8,5 @@ metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
 {{ include "linkoopdb.labels" . | indent 4 }}
-    app.kubernetes.io/component: nfs
+{{ include "linkoopdb.nfs.label" . | indent 4 }}
 {{- end }}

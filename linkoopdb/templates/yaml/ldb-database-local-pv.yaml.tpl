@@ -15,7 +15,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: {{ include "database.pv.prefix" $ }}-local-storage
   local:
     path: {{ $.Values.shareDisk }}

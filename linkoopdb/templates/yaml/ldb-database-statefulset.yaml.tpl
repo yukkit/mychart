@@ -26,7 +26,7 @@ metadata:
 {{ include "linkoopdb.labels" . | indent 4 }}
 {{ include "linkoopdb.database.label" . | indent 4 }}
 spec:
-  replicas: {{ default 1 $.Values.server.replicas }}
+  replicas: {{ $.Values.server.replicas | default 1 | int }}
   serviceName: {{ include "linkoopdb.name" $ }}-database
   podManagementPolicy: Parallel
   selector:
@@ -74,7 +74,7 @@ spec:
         {{- if $.Values.nfs.create }}
         - name: client
           persistentVolumeClaim:
-            claimName: {{ include "linkoopdb.name" $ }}-global
+            claimName: {{ include "linkoopdb.name" $ }}-nfs
         {{- end }}
         {{- if $.Values.hadoop.dependecy }}
         {{- range $key, $value := $.Values.hadoop.confPath }}
@@ -85,7 +85,7 @@ spec:
         {{- end }}
       imagePullSecrets:
         - name: {{ $.Values.image.imagePullSecrets }}
-{{- if eq "LINKOOPDB" $.Values.metastore.type }}
+{{- if eq "LINKOOPDB" ($.Values.metastore.type | default "LINKOOPDB") }}
       initContainers:
         - name: init
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
@@ -120,7 +120,7 @@ spec:
               mountPath: /opt/spark/conf
             {{- if $.Values.nfs.create }}
             - name: client
-              mountPath: {{ $.Values.nfs.mountPath }}
+              mountPath: {{ $.Values.nfs.mountPath | default "/fsshare"  }}
             {{- end }}
             - name: {{ include "database.pv.prefix" $ }}-local-pv
               mountPath: /opt/linkoopdb/ldb-server/ldb-server
@@ -156,10 +156,12 @@ spec:
               containerPort: {{ default 33041 $.Values.server.ports.syncPort }}
               hostPort: {{ default 33041 $.Values.server.ports.syncPort }}
           env:
+            - name: LDB_LNS_TYPE
+              value: {{ $.Values.license.type | default "datapps" }}
             - name: LDB_LNS_HOST
               value: {{ $.Values.license.host }}
             - name: LDB_LNS_PORT
-              value: "{{ $.Values.license.port }}"
+              value: {{ $.Values.license.port | default 7700 | quote}}
             - name: HADOOP_USER_NAME # hdfs user
               value: {{ $.Values.hadoop.user }}
             - name: YARN_CONF_DIR # hadoop conf dir
@@ -167,13 +169,13 @@ spec:
             - name: LINKOOPDB_LOGS_DIR # log dir
               value: /opt/logs
             - name: EXTRA_LIBS # spark use
-              value: {{ $.Values.nfs.mountPath }}/jdbc
+              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/jdbc
             - name: ALL_EXTRA_CLASSPATH # server use
-              value: {{ $.Values.nfs.mountPath }}/jdbc/*:/opt/linkoopdb/ext-jars/*
+              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/jdbc/*:/opt/linkoopdb/ext-jars/*
             - name: LINKOOPDB_JVM_OPTS
               value: {{ $.Values.server.config.jvmOpts }}
             - name: EXTERNAL_K8S_PORT
-              value: "{{ $.Values.server.ports.jdbcPort }}"
+              value: {{ $.Values.server.ports.jdbcPort | default 9105 | quote }}
             - name: LINKOOPDB_CLUSTER_LOCALMEMBER_NODEID
               valueFrom:
                 fieldRef:

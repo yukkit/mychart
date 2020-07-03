@@ -33,7 +33,7 @@ spec:
     - name: stream-jobmanager-ui
       port: 8081
       targetPort: 8081
-      nodePort: {{ .Values.stream.jobmanager.ports.ui }}
+      nodePort: {{ .Values.stream.jobmanager.ports.ui | default 30101 }}
   selector:
 {{ include "linkoopdb.labels" . | indent 4 }}
 {{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
@@ -63,7 +63,7 @@ spec:
               - matchExpressions:
                   - key: {{ .Values.stream.nodeAffinity.key }}
                     operator: In
-                    values: [{{ .Values.stream.nodeAffinity.values }}]
+                    values: [{{ .Values.stream.nodeAffinity.values | quote }}]
       volumes:
         - name: stream-config-vol
           configMap:
@@ -71,7 +71,7 @@ spec:
         {{- if .Values.nfs.create }}
         - name: nfs-client
           persistentVolumeClaim:
-            claimName: {{ .Values.nfs.label.value }}
+            claimName: {{ include "linkoopdb.name" . }}-nfs
         {{- end }}
         {{- if $.Values.hadoop.dependecy }}
         {{- range $key, $value := .Values.hadoop.confPath }}

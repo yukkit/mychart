@@ -70,7 +70,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "database.mode" -}}
-{{- if gt (int .Values.server.replicas) 1 -}}
+{{- if gt (.Values.server.replicas | default 1 | int) 1 -}}
     {{ "ha" }}
 {{- else -}}
     {{ "single" }}
@@ -78,19 +78,19 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "ldb.database.ha.nodelist" -}}
-{{- range $i := until (int .Values.server.replicas) -}}
-{{- printf "%s-database-%d:%s-database-%d.%s-database:%s:%s," (include "linkoopdb.name" $)  $i (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) (toString $.Values.server.ports.atomixPort) (toString $.Values.server.ports.jdbcPort) -}}
+{{- range $i := until (.Values.server.replicas | default 1 | int) -}}
+{{- printf "%s-database-%d:%s-database-%d.%s-database:%s:%s," (include "linkoopdb.name" $)  $i (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.server.ports.atomixPort | default 5001 | toString ) ($.Values.server.ports.jdbcPort| default 9105 | toString) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "_ldb.database.uris.items" -}}
-{{- range $i := until (int .Values.server.replicas) -}}
-{{- printf "%s-database-%s.%s-database:%s|" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) (toString $.Values.server.ports.jdbcPort) -}}
+{{- range $i := until (.Values.server.replicas | default 1 | int) -}}
+{{- printf "%s-database-%d.%s-database:%s|" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.server.ports.jdbcPort | default 9105 | toString) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "ldb.database.uris" -}}
-{{- if gt (int .Values.server.replicas) 1 -}}
+{{- if gt (.Values.server.replicas | default 1 | int) 1 -}}
 {{- printf "jdbc:linkoopdb:cluster://" -}}
 {{- else -}}
 {{- printf "jdbc:linkoopdb:tcp://" -}}
@@ -120,7 +120,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "metastore.mode" -}}
-{{- if gt (int .Values.metastore.replicas) 1 -}}
+{{- if gt (.Values.metastore.replicas | default 1 | int) 1 -}}
     {{ "ha" }}
 {{- else -}}
     {{ "single" }}
@@ -128,19 +128,19 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "ldb.metastore.ha.nodelist" -}}
-{{- range $i := until (int .Values.metastore.replicas) -}}
+{{- range $i := until (.Values.metastore.replicas | default 1 | int) -}}
 {{- printf "%s-metastore-%d:%s-metastore-%d.%s-metastore:5002:9106," (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "_ldb.metastore.uris.items" -}}
-{{- range $i := until (int .Values.metastore.replicas) -}}
+{{- range $i := until (.Values.metastore.replicas | default 1 | int) -}}
 {{- printf "%s-metastore-%d.%s-metastore:9106|" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "ldb.metastore.uris" -}}
-{{- if gt (int .Values.metastore.replicas) 1 -}}
+{{- if gt (.Values.metastore.replicas | default 1 | int) 1 -}}
 {{- printf "jdbc:linkoopdb:cluster://" -}}
 {{- else }}
 {{- printf "jdbc:linkoopdb:tcp://" -}}
@@ -202,6 +202,9 @@ PersistentVolume
 {{- define "database.pv.prefix" -}}
 {{ include "linkoopdb.name" $ }}-database-{{ $.Release.Name }}
 {{- end -}}
+{{- define "nfs.pv.name" -}}
+{{ include "linkoopdb.name" $ }}-nfs-{{ $.Release.Name }}
+{{- end -}}
 
 {{/*
 Encapsulate configmap data tool
@@ -260,34 +263,13 @@ flink-conf.yaml: |-
   jobmanager.rpc.address: {{ include "linkoopdb.name" . }}-stream-jobmanager
   state.backend: filesystem
 {{- if .Values.hadoop.dependecy }}
-  state.checkpoints.dir: {{ .Values.server.config.storageBase }}/flink-checkpoints
-  state.savepoints.dir: {{ .Values.server.config.storageBase }}/flink-savepoints
-  yarn.properties-file.location: {{ .Values.server.config.storageBase }}/flink-yarn/session
+  state.checkpoints.dir: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-checkpoints
+  state.savepoints.dir: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-savepoints
+  yarn.properties-file.location: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-yarn/session
 {{- else }}
-  state.checkpoints.dir: {{ .Values.nfs.mountPath }}/flink-checkpoints
-  state.savepoints.dir: {{ .Values.nfs.mountPath }}/flink-savepoints
-  yarn.properties-file.location: {{ .Values.nfs.mountPath }}/flink-yarn/session
-{{- end }}
-  blob.server.port: 6124
-  queryable-state.server.ports: 6125
-{{- end -}}
-
-{{/*
-Encapsulate hadoop configmap data
-*/}}
-{{- define "hadoop-configmap.data" -}}
-flink-conf.yaml: |-
-{{ toYaml $.Values.stream.config | indent 2 }}
-  jobmanager.rpc.address: {{ include "linkoopdb.name" . }}-stream-jobmanager
-  state.backend: filesystem
-{{- if .Values.hadoop.dependecy }}
-  state.checkpoints.dir: {{ .Values.server.config.storageBase }}/flink-checkpoints
-  state.savepoints.dir: {{ .Values.server.config.storageBase }}/flink-savepoints
-  yarn.properties-file.location: {{ .Values.server.config.storageBase }}/flink-yarn/session
-{{- else }}
-  state.checkpoints.dir: {{ .Values.nfs.mountPath }}/flink-checkpoints
-  state.savepoints.dir: {{ .Values.nfs.mountPath }}/flink-savepoints
-  yarn.properties-file.location: {{ .Values.nfs.mountPath }}/flink-yarn/session
+  state.checkpoints.dir: {{ .Values.nfs.mountPath | default "/fsshare"  }}/flink-checkpoints
+  state.savepoints.dir: {{ .Values.nfs.mountPath | default "/fsshare"  }}/flink-savepoints
+  yarn.properties-file.location: {{ .Values.nfs.mountPath | default "/fsshare"  }}/flink-yarn/session
 {{- end }}
   blob.server.port: 6124
   queryable-state.server.ports: 6125
