@@ -3,10 +3,8 @@ kind: Service
 metadata:
   name: {{ include "linkoopdb.name" $ }}-database
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: server
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.database.label" . | indent 4 }}
 spec:
   ports:
     - port: {{ default 9105 $.Values.server.ports.jdbcPort }}
@@ -17,34 +15,29 @@ spec:
       name: atomix
   clusterIP: None
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: server
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.database.label" . | indent 4 }}
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: {{ include "linkoopdb.name" $ }}-database
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: server
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.database.label" . | indent 4 }}
 spec:
   replicas: {{ default 1 $.Values.server.replicas }}
   serviceName: {{ include "linkoopdb.name" $ }}-database
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-      app.kubernetes.io/instance: {{ $.Release.Name }}
-      app.kubernetes.io/component: server
+{{ include "linkoopdb.labels" . | indent 6 }}
+{{ include "linkoopdb.database.label" . | indent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-        app.kubernetes.io/instance: {{ $.Release.Name }}
-        app.kubernetes.io/component: server
+{{ include "linkoopdb.labels" . | indent 8 }}
+{{ include "linkoopdb.database.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:

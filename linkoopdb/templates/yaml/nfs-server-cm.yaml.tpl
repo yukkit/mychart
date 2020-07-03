@@ -7,8 +7,6 @@ kind: ConfigMap
 metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "linkoopdb.labels" . | indent 4 }}
     app.kubernetes.io/component: nfs
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}

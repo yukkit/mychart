@@ -4,9 +4,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "linkoopdb.name" . }}-global
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: all
+{{ include "linkoopdb.labels" . | indent 4 }}
+    app.kubernetes.io/component: nfs
 spec:
   accessModes:
     - ReadWriteMany

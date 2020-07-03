@@ -8,10 +8,8 @@ kind: PersistentVolume
 metadata:
   name: {{ include "metastore.pv.prefix" $ }}-{{ $node }}
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: metastore
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{ include "linkoopdb.labels" $ | indent 4 }}
+{{ include "linkoopdb.metastore.label" $ | indent 4 }}
 spec:
   capacity:
     storage: 100Gi

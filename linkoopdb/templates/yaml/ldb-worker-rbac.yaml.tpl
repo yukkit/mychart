@@ -3,10 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: {{ include "linkoopdb.name" . }}-edit
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: edit
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.worker.label" . | indent 4 }}
 rules:
 - apiGroups:
   - ""

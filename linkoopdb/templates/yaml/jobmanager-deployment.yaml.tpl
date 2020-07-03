@@ -4,10 +4,8 @@ kind: Service
 metadata:
   name: {{ include "linkoopdb.name" . }}-stream-jobmanager
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: stream-jobmanager
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
 spec:
   ports:
     - name: rpc
@@ -19,15 +17,16 @@ spec:
     - name: ui
       port: 8081
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: stream-jobmanager
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "linkoopdb.name" . }}-stream-jobmanager-ui
+  labels:
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
 spec:
   type: NodePort
   ports:
@@ -36,29 +35,26 @@ spec:
       targetPort: 8081
       nodePort: {{ .Values.stream.jobmanager.ports.ui }}
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: stream-jobmanager
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ include "linkoopdb.name" . }}-stream-jobmanager
+  labels:
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 4 }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: stream-jobmanager
-      app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 6 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: stream-jobmanager
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 8 }}
+{{ include "linkoopdb.stream.jobmanager.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:

@@ -138,6 +138,7 @@ stream:
       limits: {}
       requests: {}
   debugWorker:
+    replicas: 2
     ports:
       workerPort:
     resources:

@@ -4,10 +4,8 @@ kind: Service
 metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "linkoopdb.labels" . | indent 4 }}
     app.kubernetes.io/component: nfs
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   clusterIP: None
   ports:
@@ -15,10 +13,8 @@ spec:
     port: 2049
     protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "linkoopdb.labels" . | indent 4 }}
     app.kubernetes.io/component: nfs
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
   type: ClusterIP
 ---
 apiVersion: extensions/v1beta1
@@ -26,22 +22,18 @@ kind: Deployment
 metadata:
   name: {{ include "linkoopdb.name" . }}-nfs
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "linkoopdb.labels" . | indent 4 }}
     app.kubernetes.io/component: nfs
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: nfs
+{{ include "linkoopdb.labels" . | indent 6 }}
+      app.kubernetes.io/component: nfs
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "linkoopdb.labels" . | indent 8 }}
         app.kubernetes.io/component: nfs
     spec:
       nodeName: {{ .Values.nfs.node }}

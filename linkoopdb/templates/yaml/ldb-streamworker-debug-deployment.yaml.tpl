@@ -2,20 +2,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ include "linkoopdb.name" . }}-stream-worker
+  name: {{ include "linkoopdb.name" . }}-stream-debug-worker
   labels:
 {{ include "linkoopdb.labels" . | indent 4 }}
-{{ include "linkoopdb.stream.worker.label" . | indent 4 }}
+{{ include "linkoopdb.stream.debugWorker.label" . | indent 4 }}
 spec:
+  replicas: {{ $.Values.stream.debugWorker.replicas | default 1 }}
   selector:
     matchLabels:
 {{ include "linkoopdb.labels" . | indent 6 }}
-{{ include "linkoopdb.stream.worker.label" . | indent 6 }}
+{{ include "linkoopdb.stream.debugWorker.label" . | indent 6 }}
   template:
     metadata:
       labels:
 {{ include "linkoopdb.labels" . | indent 8 }}
-{{ include "linkoopdb.stream.worker.label" . | indent 8 }}
+{{ include "linkoopdb.stream.debugWorker.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:
@@ -101,6 +102,8 @@ spec:
             - containerPort: {{ .Values.stream.streamWorker.ports.workerPort }}
               name: worker-port
           env:
+            - name: LINKOOPDB_STREAM_LOCAL_WORK_RUN_MODE
+              value: DEBUG
             - name: HADOOP_USER_NAME
               value: {{ .Values.hadoop.user }}
             - name: YARN_CONF_DIR

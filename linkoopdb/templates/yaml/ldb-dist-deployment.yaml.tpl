@@ -4,16 +4,13 @@ kind: Service
 metadata:
   name: {{ .domain }}
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+{{ include "linkoopdb.labels" $ | indent 4 }}
     app.kubernetes.io/component: ldb-dist-{{ .domain }}
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   ports:
   - port: {{ .port }}
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
+{{ include "linkoopdb.labels" $ | indent 4 }}
     app.kubernetes.io/component: ldb-dist-{{ .domain }}
 ---
 apiVersion: extensions/v1beta1
@@ -23,14 +20,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-        app.kubernetes.io/instance: {{ $.Release.Name }}
-        app.kubernetes.io/component: ldb-dist-{{ .domain }}
+{{ include "linkoopdb.labels" $ | indent 6 }}
+      app.kubernetes.io/component: ldb-dist-{{ .domain }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-        app.kubernetes.io/instance: {{ $.Release.Name }}
+{{ include "linkoopdb.labels" $ | indent 8 }}
         app.kubernetes.io/component: ldb-dist-{{ .domain }}
     spec:
       nodeName: {{ .node }}

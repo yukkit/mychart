@@ -4,10 +4,8 @@ kind: Service
 metadata:
   name: {{ include "linkoopdb.name" $ }}-metastore
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: metastore
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.metastore.label" . | indent 4 }}
 spec:
   ports:
     - port: 9106
@@ -18,35 +16,30 @@ spec:
       name: atomix
   clusterIP: None
   selector:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: metastore
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.metastore.label" . | indent 4 }}
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: {{ include "linkoopdb.name" $ }}-metastore
   labels:
-    app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/component: metastore
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.metastore.label" . | indent 4 }}
 spec:
   replicas: {{ default 1 $.Values.metastore.replicas }}
   serviceName: {{ include "linkoopdb.name" $ }}-metastore
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-      app.kubernetes.io/instance: {{ $.Release.Name }}
-      app.kubernetes.io/component: metastore
+{{ include "linkoopdb.labels" . | indent 6 }}
+{{ include "linkoopdb.metastore.label" . | indent 6 }}
   template:
     metadata:
       labels:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" $ }}
-        app.kubernetes.io/instance: {{ $.Release.Name }}
-        app.kubernetes.io/component: metastore
+{{ include "linkoopdb.labels" . | indent 8 }}
+{{ include "linkoopdb.metastore.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:

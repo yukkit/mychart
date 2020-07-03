@@ -3,21 +3,20 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ include "linkoopdb.name" . }}-stream-taskmanager
+  labels:
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.stream.taskmanager.label" . | indent 4 }}
 spec:
   replicas: {{ .Values.stream.taskmanager.replicas | default 1 }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: stream-taskmanager
-      app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 6 }}
+{{ include "linkoopdb.stream.taskmanager.label" . | indent 6 }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "linkoopdb.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: stream-taskmanager
-        app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "linkoopdb.labels" . | indent 8 }}
+{{ include "linkoopdb.stream.taskmanager.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:
