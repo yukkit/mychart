@@ -2,67 +2,161 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
-  repository: nginx
-  tag: stable
-  pullPolicy: IfNotPresent
+  repository: 192.168.1.79:5000/linkoopdb
+  tag: v2.3.0-latest
+  pullPolicy: Always
+  imagePullSecrets:
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+#hostNetwork: false
 
-serviceAccount:
-  # Specifies whether a service account should be created
+shareDisk: /tmp/linkoopdb
+
+hadoop:
+  dependecy: false
+  user: hdfs
+  confPath:
+    conf: /etc/hadoop/conf
+#   hdp: /etc/hadoop/hdp
+
+license:
+  type: datapps
+  host: license.datapps.com
+  port: 7700
+
+nfs:
+  create: false
+  mountPath: /fsshare
+  storage: 100Gi
+  path: /tmp/nfs
+  node: node61
+  reclaimPolicy: Retain
+  label:
+    key: pv
+    value: pvc-001
+
+#ldbDist:
+#  - domain:
+#    port:
+#    node:
+#    rootPath:
+
+shuffleService:
   create: true
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  localDir:
+    disk1: /tmp/spark-local
+  resources:
+    limits: {}
+    requests: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+metastore:
+  type: LINKOOPDB
+  replicas: 3
+  nodeAffinity:
+    key: linkoopdb/metaserver
+    value: true
+  storage:
+    nodeAffinity:
+      key: linkoopdb/metastorage
+      value: true
+  config:
+    url:
+    username:
+    password:
+    driver:
+    batchWorkerUiPort: 30402
+    jvmOpts:
+    resources:
+      master:
+        memory:
+      taskmanger:
+        memory:
+        cpuCores:
+        number:
+  resources:
+    limits: {}
+    requests: {}
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+server:
+  replicas: 3
+  mode: single
+  nodeAffinity:
+    key: linkoopdb/dbserver
+    value: true
+  ports:
+    jdbcPort: 9105
+    regPort: 17771
+    atomixPort: 5001
+    syncPort: 33041
+  config:
+    storageBase: ldb:///tmp/linkoopdb
+    batchWorkerJars: hdfs:///user/ldb/spark
+    sqlLogEnabled: false
+    sqlHistoryEnabled: false
+    batchWorkerUiPort: 30401
+    jvmOpts:
+    hiveMetastoreUris:
+    enableHiveSupport:
+    keytab:
+  resources:
+    limits: {}
+    requests: {}
 
-service:
-  type: ClusterIP
-  port: 80
+batchWorker:
+  launcher: k8s
+  resources:
+    cluster:
+      queue:
+      totalMemory:
+      totalCpuCores:
+      numNodes:
+      numExecutorsPerHost:
+      totalGpuCores:
+    master:
+      memory:
+    taskmanger:
+      memory:
+      cpuCores:
+      number:
+      gpuCores:
+  config:
+    jvmOpts:
 
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths: []
+stream:
+  create: true
+  nodeAffinity:
+    key: kubernetes.io/hostname
+    values: node61,node62,node63
+  config:
+    yarn.properties-file.location: file:///opt/flink-yarn/session
+  streamWorker:
+    kafkaLibPath:
+    libPath:
+    ports:
+      workerPort: 7778
+    resources:
+      limits: {}
+      requests: {}
+  debugWorker:
+    ports:
+      workerPort:
+    resources:
+      limits: {}
+      requests: {}
+  jobmanager:
+    ports:
+      ui: 30101
+    resources:
+      limits: {}
+      requests: {}
+  taskmanager:
+    replicas: 1
+    resources:
+      limits: {}
+      requests: {}
 
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+monitor:
+  create: false
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+studio:
+  create: false
