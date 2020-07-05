@@ -50,3 +50,27 @@ app.kubernetes.io/component: stream-taskmanager
 {{- define "linkoopdb.shuffle.label" -}}
 app.kubernetes.io/component: shuffle
 {{- end -}}
+
+{{- define "linkoopdb.metrics.monitor.label" -}}
+app.kubernetes.io/component: metrics-monitor
+{{- end -}}
+
+{{- define "linkoopdb.metrics.pushgateway.label" -}}
+app.kubernetes.io/component: metrics-pushgateway
+{{- end -}}
+
+{{- define "linkoopdb.metrics.prometheus.label" -}}
+app.kubernetes.io/component: metrics-prometheus
+{{- end -}}
+
+{{- define "linkoopdb.metrics.exporter.label" -}}
+app.kubernetes.io/component: metrics-exporter
+{{- end -}}
+
+{{- define "linkoopdb.studio.label" -}}
+app.kubernetes.io/component: studio
+{{- end -}}
+
+{{- define "linkoopdb.tpls.label" -}}
+app.kubernetes.io/component: tpls
+{{- end -}}

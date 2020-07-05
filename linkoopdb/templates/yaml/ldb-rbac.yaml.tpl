@@ -243,6 +243,11 @@ kind: ServiceAccount
 metadata:
   name: spark
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -256,6 +261,10 @@ subjects:
     name: spark
   - kind: ServiceAccount
     name: default
+{{- if .Values.metrics.create }}
+  - kind: ServiceAccount
+    name: prometheus
+{{- end }}
 roleRef:
   kind: Role
   name: {{ include "linkoopdb.name" . }}-edit

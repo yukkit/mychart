@@ -25,7 +25,7 @@ license:
   port: 7700
 
 nfs:
-  create: true
+  create: false
   mountPath:
   storage:
   path:
@@ -151,8 +151,57 @@ stream:
       limits: {}
       requests: {}
 
-monitor:
-  create: false
+metrics:
+  create: true
+  monitor:
+    resources:
+      limits: {}
+      requests: {}
+  pushgateway:
+    image:
+      repository: prom/pushgateway
+      tag: latest
+      imagePullSecrets:
+      pullPolicy:
+    nodePorts:
+      pushgateway: 30091
+    randomJobnameSuffix: false
+    deleteOnShutdown: false
+    resources:
+      limits: {}
+      requests: {}
+  prometheus:
+    image:
+      repository: prom/prometheus
+      tag: latest
+      imagePullSecrets:
+      pullPolicy:
+    nodePorts:
+      prometheus: 30090
+    resources:
+      limits: {}
+      requests: {}
+  exporter:
+    image:
+      repository: 192.168.1.79:5000/node-exporter
+      tag: v0.17.0
+      imagePullSecrets:
+      pullPolicy:
+    resources:
+      limits: {}
+      requests: {}
 
+# not support
 studio:
   create: false
+#  image:
+#    repository: 192.168.1.79:5000/studio
+#    tag: v2.3.0-latest
+#    imagePullSecrets:
+#    pullPolicy:
+#  nodeAffinity:
+#    key: linkoopdb/studio
+#    value: true
+#  resources:
+#    limits: {}
+#    requests: {}

@@ -274,3 +274,15 @@ flink-conf.yaml: |-
   blob.server.port: 6124
   queryable-state.server.ports: 6125
 {{- end -}}
+
+{{/*
+Encapsulate nginx related services configmap data
+*/}}
+{{- define "tpls-configmap.data" -}}
+ldb-dist.conf.template: |-
+{{ tuple "config/tpls/_ldb-dist.conf.tpl" . | include "ldb-toolkit.utils.template" | indent 2 }}
+ldb-monitor.conf.template: |-
+{{ tuple "config/tpls/_ldb-monitor.conf.tpl" . | include "ldb-toolkit.utils.template" | indent 2 }}
+ldb-server.conf.template: |-
+{{ tuple "config/tpls/_ldb-server.conf.tpl" . | include "ldb-toolkit.utils.template" | indent 2 }}
+{{- end -}}

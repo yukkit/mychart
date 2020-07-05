@@ -45,7 +45,7 @@ ldb.server.ha.nodelist={{ include "ldb.database.ha.nodelist" . | trimAll "," }}
 ldb.worker.batch.k8s.ui.port={{ .Values.server.config.batchWorkerUiPort | default 30401 }}
 ldb.worker.batch.k8s.shuffle.labels=app.kubernetes.io/name={{ include "linkoopdb.name" $ }},app.kubernetes.io/instance={{ $.Release.Name }},app.kubernetes.io/component=shuffle,app.kubernetes.io/managed-by={{ $.Release.Service }}
 ldb.worker.batch.local.dir={{ include "batchWorkerLocalDir" . | trimAll "," }}
-ldb.monitor.reporter.promgateway.host={{ include "linkoopdb.name" . }}-gateway
+ldb.monitor.reporter.promgateway.host={{ include "linkoopdb.name" . }}-metrics-pushgateway
 ldb.monitor.reporter.promgateway.port=9091
 ldb.worker.stream.run.mode=REST
 ldb.worker.stream.extLibs=/fsshare/{{ .Values.stream.streamWorker.libPath | default "ext" }}

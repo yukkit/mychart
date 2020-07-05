@@ -2,117 +2,115 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_SERVER_LIST}
-  namespace: #{linkoopdb.kubernetes.namespace}
+  name: {{ include "linkoopdb.name" . }}-studio
+  labels:
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.studio.label" . | indent 4 }}
 spec:
+  type: NodePort
   ports:
     - name: web-ui
-      nodePort: #{linkoopdb.kubernetes.studio.service.nodePort.web-ui.options.nodePort}
-      port: #{linkoopdb.kubernetes.studio.service.nodePort.web-ui.port}
+      nodePort: 30510
+      port: 8080
       protocol: TCP
-      targetPort: #{linkoopdb.kubernetes.studio.service.nodePort.web-ui.port}
+      targetPort: 8080
   selector:
-    app: ldb
-    component: studio
-  type: NodePort
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.studio.label" . | indent 4 }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
+  name: {{ include "linkoopdb.name" . }}-studio
   labels:
-    app: ldb
-    component: studio
-  name: #{linkoopdb.kubernetes.studio.name}
-  namespace: #{linkoopdb.kubernetes.namespace}
+{{ include "linkoopdb.labels" . | indent 4 }}
+{{ include "linkoopdb.studio.label" . | indent 4 }}
 spec:
-  replicas: #{linkoopdb.kubernetes.studio.replicas}
+  replicas: 1
   selector:
     matchLabels:
-      app: ldb
-      component: studio
+{{ include "linkoopdb.labels" . | indent 6 }}
+{{ include "linkoopdb.studio.label" . | indent 6 }}
   template:
     metadata:
       labels:
-        app: ldb
-        component: studio
+{{ include "linkoopdb.labels" . | indent 8 }}
+{{ include "linkoopdb.studio.label" . | indent 8 }}
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: #{linkoopdb.kubernetes.studio.nodeAffinity.key}
+                  - key: {{ $.Values.studio.nodeAffinity.key }}
                     operator: In
-                    values: [#{linkoopdb.kubernetes.studio.nodeAffinity.values}]
+                    values: [{{ $.Values.studio.nodeAffinity.value | quote }}]
       volumes:
         - hostPath:
-            path: #{linkoopdb.kubernetes.studio.volume.hostPath.logs.options.path}
+            path: {{ .Values.shareDisk | default "/tmp/linkoopdb" }}/logs/studio
             type: DirectoryOrCreate
           name: logs
         - hostPath:
-            path: #{linkoopdb.kubernetes.studio.volume.hostPath.datasets.options.path}
+            path: {{ .Values.shareDisk | default "/tmp/linkoopdb" }}/studio/dataset
             type: DirectoryOrCreate
           name: datasets
         - name: init-script
           configMap:
             name: init-script-cm
       imagePullSecrets:
-        - name: #{linkoopdb.kubernetes.container.image.imagePullSecrets}
+        - name: {{ .Values.studio.image.imagePullSecrets | default .Values.image.imagePullSecrets }}
       containers:
-        - image: #{linkoopdb.kubernetes.studio.container.image}
-          imagePullPolicy: #{linkoopdb.kubernetes.studio.container.image.imagePullPolicy}
-          name: ldb-studio
+        - name: studio
+          image: {{ .Values.studio.image.repository | default "prom/pushgateway" }}:{{ .Values.studio.image.tag | default "latest" }}
+          imagePullPolicy: {{ .Values.studio.image.pullPolicy | default .Values.image.pullPolicy }}
           args:
-            - #{linkoopdb.kubernetes.studio.args}
+            - studio
           volumeMounts:
-            - mountPath: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_LOGS_DIR}
+            - mountPath: opt/studio/slogs
               name: logs
             - mountPath: /opt/dataset
               name: datasets
           env:
             - name: LINKOOP_DB_JDBC_URL
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_DB_JDBC_URL}
-            - name: LINKOOPDB_META_JDBC_URL
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOPDB_META_JDBC_URL}
+            {{- if eq "single" (include "database.mode" .) }}
+              value: {{ include "linkoopdb.name" . }}-database-0.{{ include "linkoopdb.name" . }}-database
+            {{- else }}
+              value: {{ include "ldb.database.uris" . }}
+            {{- end }}
             - name: LINKOOP_STUDIO_META_SOLR_URL
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_META_SOLR_URL}
+              value: http://localhost:8987/solr
             - name: SOLR_PORT
-              value: "#{linkoopdb.kubernetes.studio.env.SOLR_PORT}"
+              value: "8987"
             - name: LINKOOP_DIST_SERVER_LIST
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_DIST_SERVER_LIST}
+              value: {{ "" }}
             - name: LINKOOP_STUDIO_SERVER_LIST
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_SERVER_LIST}:#{linkoopdb.kubernetes.studio.service.nodePort.web-ui.port}
+              value: {{ include "linkoopdb.name" . }}-studio:8080
             - name: LINKOOP_STUDIO_STORAGE_ENGINE
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_STORAGE_ENGINE}
+              value: PALLAS
             - name: LINKOOP_STUDIO_SYSTEMTABLE_ENGINE
-              value: "#{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_SYSTEMTABLE_ENGINE}"
+              value: "true"
             - name: LINKOOP_STUDIO_LOGS_DIR
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_LOGS_DIR}
+              value: /opt/studio/slogs
             - name: LINKOOP_DB_NFS_SQL_AUDIT_LOG
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_DB_NFS_SQL_AUDIT_LOG}
+              value: /tmp
             - name: LINKOOP_DB_NFS_FLOW_AUDIT_LOG
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_DB_NFS_FLOW_AUDIT_LOG}
+              value: /tmp
             - name: LINKOOP_DB_NFS_PATH
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_DB_NFS_PATH}
+              value: /tmp
             - name: LINKOOP_STUDIO_META_FILE
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_META_FILE}
+              value: /tmp
             - name: LINKOOP_STUDIO_SERVER_MODE
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_SERVER_MODE}
+              value: single
             - name: JVM_WORKER
-              value: "#{linkoopdb.kubernetes.studio.env.JVM_WORKER}"
+              value: "64"
             - name: LINKOOP_STUDIO_JVM_OPTS
-              value: #{linkoopdb.kubernetes.studio.env.LINKOOP_STUDIO_JVM_OPTS}
+              value:
           resources:
-            requests:
-              memory: "#{linkoopdb.kubernetes.studio.memory}"  # 请求内存
-              cpu: "#{linkoopdb.kubernetes.studio.cores}"  # 请求cpu，可以认为1000m占用一个cpu
-      #          limits:
-      #            memory: "#{linkoopdb.kubernetes.studio.limit.memory}"
-      #            cpu: "#{linkoopdb.kubernetes.studio.limit.cores}"
+{{ toYaml .Values.studio.resources | indent 12 }}
       initContainers:
         - name: init
-          image: #{linkoopdb.kubernetes.studio.container.image}
-          imagePullPolicy: #{linkoopdb.kubernetes.studio.container.image.imagePullPolicy}
+          image: {{ .Values.studio.image.repository | default "prom/pushgateway" }}:{{ .Values.studio.image.tag | default "latest" }}
+          imagePullPolicy: {{ .Values.studio.image.pullPolicy | default .Values.image.pullPolicy }}
           volumeMounts:
             - name: init-script
               mountPath: /opt/studio/init
@@ -122,5 +120,10 @@ spec:
             - |
               set -ex
               $LINKOOPDB_HOME/bin/ldb-client.sh \
-              "#{linkoopdb.kubernetes.studio.env.LINKOOPDB_SERVER_JDBC_CLUSTER}" admin 123456 < /opt/studio/init/data-init-default.sql
+              {{- if eq "single" (include "database.mode" .) }}
+              {{ include "linkoopdb.name" . }}-database-0.{{ include "linkoopdb.name" . }}-database \
+              {{- else }}
+              {{ include "ldb.database.uris" . }} \
+              {{- end }}
+              admin 123456 < /opt/studio/init/data-init-default.sql
 {{- end }}
