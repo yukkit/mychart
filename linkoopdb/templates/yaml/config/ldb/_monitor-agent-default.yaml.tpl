@@ -8,10 +8,10 @@ global:
   report_interval: 30000
 scrapes:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
-  {{- range $i := until (.Values.server.replicas | default 1 | int) }}
+  {{- range $i := until (.Values.database.replicas | default 1 | int) }}
   - job_name: {{ include "linkoopdb.name" $ }}-database-{{ $i }}
     type: 'LINKOOPDB_SERVER'
-    target: {{ printf "%s-database-%d.%s-database" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) }}:{{ $.Values.server.ports.regPort | default 17771 }}
+    target: {{ printf "%s-database-%d.%s-database" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) }}:{{ $.Values.database.ports.regPort | default 17771 }}
   {{- end }}
   {{- if eq "LINKOOPDB" (.Values.metastore.type | default "LINKOOPDB") }}
   {{- range $i := until (.Values.metastore.replicas | default 1 | int) }}

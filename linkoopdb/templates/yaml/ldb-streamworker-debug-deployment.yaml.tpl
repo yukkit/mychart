@@ -68,7 +68,7 @@ spec:
               while ${notReady}; do
                 for item in ${server_cluster_arr[@]}; do
                   item_arr=(${item//:/ })
-                  server_addr=${item_arr[1]}:{{ $.Values.server.ports.regPort | default 17771 }}
+                  server_addr=${item_arr[1]}:{{ $.Values.database.ports.regPort | default 17771 }}
                   [ "$(curl -s ${server_addr}/dbstatus/isready)" == "true" ] && notReady=false
                   [ "${notReady}" == "false" ] && break
                 done

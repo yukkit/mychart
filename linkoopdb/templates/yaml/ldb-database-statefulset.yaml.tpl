@@ -7,11 +7,11 @@ metadata:
 {{ include "linkoopdb.database.label" . | indent 4 }}
 spec:
   ports:
-    - port: {{ default 9105 $.Values.server.ports.jdbcPort }}
+    - port: {{ default 9105 $.Values.database.ports.jdbcPort }}
       name: jdbc
-    - port: {{ default 17771 $.Values.server.ports.regPort }}
+    - port: {{ default 17771 $.Values.database.ports.regPort }}
       name: reg
-    - port: {{ default 5001 $.Values.server.ports.atomixPort }}
+    - port: {{ default 5001 $.Values.database.ports.atomixPort }}
       name: atomix
   clusterIP: None
   selector:
@@ -26,7 +26,7 @@ metadata:
 {{ include "linkoopdb.labels" . | indent 4 }}
 {{ include "linkoopdb.database.label" . | indent 4 }}
 spec:
-  replicas: {{ $.Values.server.replicas | default 1 | int }}
+  replicas: {{ $.Values.database.replicas | default 1 | int }}
   serviceName: {{ include "linkoopdb.name" $ }}-database
   podManagementPolicy: Parallel
   selector:
@@ -44,9 +44,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: {{ $.Values.server.nodeAffinity.key }}
+                  - key: {{ $.Values.database.nodeAffinity.key }}
                     operator: In
-                    values: [{{ $.Values.server.nodeAffinity.value | quote }}]
+                    values: [{{ $.Values.database.nodeAffinity.value | quote }}]
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - topologyKey: kubernetes.io/hostname
@@ -150,11 +150,11 @@ spec:
                     done
           ports:
             - name: jdbc
-              containerPort: {{ default 9105 $.Values.server.ports.jdbcPort }}
-              hostPort: {{ default 9105 $.Values.server.ports.jdbcPort }}
+              containerPort: {{ default 9105 $.Values.database.ports.jdbcPort }}
+              hostPort: {{ default 9105 $.Values.database.ports.jdbcPort }}
             - name: sync
-              containerPort: {{ default 33041 $.Values.server.ports.syncPort }}
-              hostPort: {{ default 33041 $.Values.server.ports.syncPort }}
+              containerPort: {{ default 33041 $.Values.database.ports.syncPort }}
+              hostPort: {{ default 33041 $.Values.database.ports.syncPort }}
           env:
             - name: LDB_LNS_TYPE
               value: {{ $.Values.license.type | default "datapps" }}
@@ -173,9 +173,9 @@ spec:
             - name: ALL_EXTRA_CLASSPATH # server use
               value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/driver/*:/opt/linkoopdb/ext-jars/*
             - name: LINKOOPDB_JVM_OPTS
-              value: {{ $.Values.server.config.jvmOpts }}
+              value: {{ $.Values.database.config.jvmOpts }}
             - name: EXTERNAL_K8S_PORT
-              value: {{ $.Values.server.ports.jdbcPort | default 9105 | quote }}
+              value: {{ $.Values.database.ports.jdbcPort | default 9105 | quote }}
             - name: LINKOOPDB_CLUSTER_LOCALMEMBER_NODEID
               valueFrom:
                 fieldRef:
@@ -193,7 +193,7 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
           resources:
-{{ toYaml $.Values.server.resources | indent 12 }}
+{{ toYaml $.Values.database.resources | indent 12 }}
   volumeClaimTemplates:
   - metadata:
       name: {{ include "database.pv.prefix" $ }}-local-pv

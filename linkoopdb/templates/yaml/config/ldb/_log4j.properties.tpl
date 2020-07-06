@@ -1,4 +1,4 @@
-log4j.rootCategory=WARN, CONSOLE, FILE
+log4j.rootCategory={{ .Values.database.config.logLevel | default "WARN" }}, CONSOLE, FILE
 log4j.logger.AUDIT=INFO, AUDIT_FILE
 log4j.additivity.AUDIT=false
 LOG_PATH=${linkoopdb.logs.dir}/${linkoopdb.com.name}

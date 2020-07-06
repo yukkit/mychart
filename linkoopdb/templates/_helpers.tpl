@@ -48,18 +48,26 @@ Create the name of the service account to use
 {{- define  "_database.pv" -}}
 {{- range $index, $node := (lookup "v1" "Node" "" "").items -}}
 {{ $labels := $node.metadata.labels }}
-{{ $value := get $labels $.Values.server.nodeAffinity.key }}
-{{- if eq (toString $.Values.server.nodeAffinity.value) $value }}
+{{ $value := get $labels $.Values.database.nodeAffinity.key }}
+{{- if eq (toString $.Values.database.nodeAffinity.value) $value }}
 {{ get $labels "kubernetes.io/hostname" }}
 {{- end }}
+{{- end -}}
+{{- end -}}
+
+{{- define "database.storage.default" -}}
+{{- if hasPrefix "ldb//" (.Values.database.config.storageBase | default "ldb:///tmp/linkoopdb/") -}}
+pallas
+{{- else -}}
+dfs
 {{- end -}}
 {{- end -}}
 
 {{- define  "_database.nodes" -}}
 {{- range $index, $node := (lookup "v1" "Node" "" "").items -}}
 {{ $labels := $node.metadata.labels }}
-{{ $value := get $labels $.Values.server.nodeAffinity.key }}
-{{- if eq (toString $.Values.server.nodeAffinity.value) $value }}
+{{ $value := get $labels $.Values.database.nodeAffinity.key }}
+{{- if eq (toString $.Values.database.nodeAffinity.value) $value }}
 {{ get $labels "kubernetes.io/hostname" }}
 {{- end }}
 {{- end -}}
@@ -70,7 +78,7 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "database.mode" -}}
-{{- if gt (.Values.server.replicas | default 1 | int) 1 -}}
+{{- if gt (.Values.database.replicas | default 1 | int) 1 -}}
     {{ "ha" }}
 {{- else -}}
     {{ "single" }}
@@ -78,19 +86,19 @@ Create the name of the service account to use
 {{- end -}}
 
 {{- define "ldb.database.ha.nodelist" -}}
-{{- range $i := until (.Values.server.replicas | default 1 | int) -}}
-{{- printf "%s-database-%d:%s-database-%d.%s-database:%s:%s," (include "linkoopdb.name" $)  $i (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.server.ports.atomixPort | default 5001 | toString ) ($.Values.server.ports.jdbcPort| default 9105 | toString) -}}
+{{- range $i := until (.Values.database.replicas | default 1 | int) -}}
+{{- printf "%s-database-%d:%s-database-%d.%s-database:%s:%s," (include "linkoopdb.name" $)  $i (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.database.ports.atomixPort | default 5001 | toString ) ($.Values.database.ports.jdbcPort| default 9105 | toString) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "_ldb.database.uris.items" -}}
-{{- range $i := until (.Values.server.replicas | default 1 | int) -}}
-{{- printf "%s-database-%d.%s-database:%s|" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.server.ports.jdbcPort | default 9105 | toString) -}}
+{{- range $i := until (.Values.database.replicas | default 1 | int) -}}
+{{- printf "%s-database-%d.%s-database:%s|" (include "linkoopdb.name" $) $i (include "linkoopdb.name" $) ($.Values.database.ports.jdbcPort | default 9105 | toString) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "ldb.database.uris" -}}
-{{- if gt (.Values.server.replicas | default 1 | int) 1 -}}
+{{- if gt (.Values.database.replicas | default 1 | int) 1 -}}
 {{- printf "jdbc:linkoopdb:cluster://" -}}
 {{- else -}}
 {{- printf "jdbc:linkoopdb:tcp://" -}}
@@ -263,9 +271,9 @@ flink-conf.yaml: |-
   jobmanager.rpc.address: {{ include "linkoopdb.name" . }}-stream-jobmanager
   state.backend: filesystem
 {{- if .Values.hadoop.dependecy }}
-  state.checkpoints.dir: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-checkpoints
-  state.savepoints.dir: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-savepoints
-  yarn.properties-file.location: {{ .Values.server.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-yarn/session
+  state.checkpoints.dir: {{ .Values.database.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-checkpoints
+  state.savepoints.dir: {{ .Values.database.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-savepoints
+  yarn.properties-file.location: {{ .Values.database.config.storageBase | default "ldb:///opt/linkoopdb/data" }}/flink-yarn/session
 {{- else }}
   state.checkpoints.dir: {{ .Values.nfs.mountPath | default "/fsshare"  }}/flink-checkpoints
   state.savepoints.dir: {{ .Values.nfs.mountPath | default "/fsshare"  }}/flink-savepoints

@@ -47,22 +47,35 @@ shuffleService:
     requests: {}
 
 metastore:
+  ## Only support LINKOOPDB/MYSQL. Default LINKOOPDB
   type:
+  ## With "metastore.type: LINKOOPDB". If you want start metastore server in single mode, please set replicas=1
+  ## If you want start metastore server in ha mode, please set replicas=3 or grater than 3, but only accept odd numbers
+  ## Default 1
   replicas:
+  ## The NodeAffinity setting of the example ensure that the metastore server pods can only be scheduled to nodes
+  ## with label:[linkoopdb/metaserver="true"],
   nodeAffinity:
     key: linkoopdb/metaserver
     value: true
   storage:
+    ## The NodeAffinity setting of the example ensure that the metastore storage pods can only be scheduled to nodes
+    ## with label:[linkoopdb/metastorage="true"],
     nodeAffinity:
       key: linkoopdb/metastorage
       value: true
   config:
+    ## With "metastore.type: MYSQL", should set url/username/password/driver,
+    ## and you should ensure there is mysql-connector-java-xx.xx.xx.jar in path "nfs.path/driver"
     url:
     username:
     password:
     driver:
+    ## Metastore worker web ui nodePort, default 30402
     batchWorkerUiPort:
+    ## Metastore server jvm options
     jvmOpts:
+    ## Metastore default resourceGroup config. Please refer to user-guide-doc for the config rule of resourceGroup
     resources:
       master:
         memory:
@@ -70,36 +83,56 @@ metastore:
         memory:
         cpuCores:
         number:
+  ## Metastore server pod resource config
   resources:
-    limits: {}
     requests: {}
+    #  cpu: 4000m
+    #  memory: 6Gi
+    limits: {}
+    #  cpu: 6000m
+    #  memory: 12Gi
 
-server:
+database:
+  ## If you want start database server in single mode, please set replicas=1
+  ## If you want start database server in ha mode, please set replicas=3 or grater than 3, but only accept odd numbers
+  ## Default 1
   replicas:
+  ## The NodeAffinity setting of the example ensure that the database server pods can only be scheduled to nodes
+  ## with label:[linkoopdb/dbserver="true"],
   nodeAffinity:
     key: linkoopdb/dbserver
     value: true
+  ## jdbc port is the database server to expose, type is hostPort, default 9105
+  ## regPort is the database server register port for worker/storage, type is clusterIP, default 17771
+  ## atomixPort port is the database server for atomix, type is clusterIP, default 5001
+  ## syncPort port is the database server to expose, type is hostPort, default 33041
   ports:
     jdbcPort:
-    regPort:
-    atomixPort:
+  #  regPort:
+  #  atomixPort:
     syncPort:
   config:
+    ## Linkoopdb storage engine's root path, support schema hdfs/ldb, default ldb:///opt/linkoopdb/data
     storageBase:
-    batchWorkerJars:
+    ## Sql job logs, default false
     sqlLogEnabled:
+    ## Sql audit logs, default false
     sqlHistoryEnabled:
+    ## Log level, default WARN
+    logLevel:
+    ## Web ui nodePort for Batch worker of database, default 30401
     batchWorkerUiPort:
+    ## Database server jvm options
     jvmOpts:
-    hiveMetastoreUris:
+    ## Hive dblink support, with "enableHiveSupport: true" you should ensure hive-site.xml in hadoop.confPath.conf
     enableHiveSupport:
+    ## If your hdfs
     keytab:
   resources:
     limits: {}
     requests: {}
 
 batchWorker:
-  launcher:
   resources:
     cluster:
       queue:

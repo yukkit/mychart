@@ -34,5 +34,5 @@ spec:
         args:
         - external-shuffle-service
         resources:
-{{ toYaml .Values.server.resources | indent 12 }}
+{{ toYaml .Values.database.resources | indent 12 }}
 {{- end }}

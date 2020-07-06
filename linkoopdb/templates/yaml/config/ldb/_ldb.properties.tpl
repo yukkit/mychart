@@ -11,18 +11,19 @@ ldb.worker.batch.resource.taskmanger.gpuCores={{ .Values.batchWorker.resources.t
 ldb.worker.batch.resource.queue={{ .Values.batchWorker.resources.cluster.queue }}
 ldb.server.stream.enabled={{ .Values.stream.create | default true }}
 ldb.server.mode={{ include "database.mode" . }}
-ldb.storage.base={{ .Values.server.config.storageBase | default "ldb:///tmp/linkoopdb/" }}
+ldb.server.storage.engine={{ include "database.storage.default" . }}
+ldb.storage.base={{ .Values.database.config.storageBase | default "ldb:///tmp/linkoopdb/" }}
 ldb.storage.launcher=k8s
 ldb.worker.launcher={{ .Values.batchWorker.launcher | default "k8s" }}
 ldb.worker.batch.k8s.container.image={{ .Values.image.repository }}:{{ .Values.image.tag }}
 ldb.worker.batch.k8s.container.image.pullPolicy={{ .Values.image.pullPolicy }}
-ldb.worker.batch.yarn.jars={{ .Values.server.config.batchWorkerJars }}
-ldb.server.sqlLog.enabled={{ .Values.server.config.sqlLogEnabled | default false }}
-ldb.server.sqlHistory.enabled={{ .Values.server.config.sqlHistoryEnabled | default false }}
+ldb.worker.batch.yarn.jars={{ .Values.database.config.batchWorkerJars }}
+ldb.server.sqlLog.enabled={{ .Values.database.config.sqlLogEnabled | default false }}
+ldb.server.sqlHistory.enabled={{ .Values.database.config.sqlHistoryEnabled | default false }}
 ldb.worker.batch.k8s.volumes.hostPath.pythonpv.options.path={{ "" }}
 ldb.worker.batch.master.extraJavaOptions={{ .Values.batchWorker.config.jvmOpts }}
-ldb.worker.hiveMetastoreUris={{ .Values.server.config.hiveMetastoreUris }}
-ldb.worker.enableHiveSupport={{ .Values.server.config.enableHiveSupport | default false }}
+ldb.worker.hiveMetastoreUris={{ .Values.database.config.hiveMetastoreUris }}
+ldb.worker.enableHiveSupport={{ .Values.database.config.enableHiveSupport | default false }}
 ldb.server.metastore.type={{ .Values.metastore.type | default "LINKOOPDB" }}
 {{- if eq "LINKOOPDB" (.Values.metastore.type | default "LINKOOPDB") }}
 ldb.server.metastore.uris={{ include "ldb.metastore.uris" . }}
@@ -34,15 +35,15 @@ ldb.server.metastore.uris={{ .Values.metastore.config.url }}
 ldb.server.metastore.username={{ .Values.metastore.config.username }}
 ldb.server.metastore.password={{ .Values.metastore.config.password }}
 {{- end }}
-ldb.server.kerberos.keytab={{ .Values.server.config.keytab }}
-ldb.server.workerRegister.port={{ .Values.server.ports.regPort | default 17771 }}
-ldb.server.dataSync.port={{ .Values.server.ports.dataSyncPort | default 33041 }}
+ldb.server.kerberos.keytab={{ .Values.database.config.keytab }}
+ldb.server.workerRegister.port={{ .Values.database.ports.regPort | default 17771 }}
+ldb.server.dataSync.port={{ .Values.database.ports.dataSyncPort | default 33041 }}
 {{- if eq "single" (include "database.mode" .) }}
 ldb.server.host={{ include "linkoopdb.name" . }}-database-0.{{ include "linkoopdb.name" . }}-database
 {{- end }}
-ldb.server.jdbc.port={{ .Values.server.ports.jdbcPort | default 9105 }}
+ldb.server.jdbc.port={{ .Values.database.ports.jdbcPort | default 9105 }}
 ldb.server.ha.nodelist={{ include "ldb.database.ha.nodelist" . | trimAll "," }}
-ldb.worker.batch.k8s.ui.port={{ .Values.server.config.batchWorkerUiPort | default 30401 }}
+ldb.worker.batch.k8s.ui.port={{ .Values.database.config.batchWorkerUiPort | default 30401 }}
 ldb.worker.batch.k8s.shuffle.labels=app.kubernetes.io/name={{ include "linkoopdb.name" $ }},app.kubernetes.io/instance={{ $.Release.Name }},app.kubernetes.io/component=shuffle,app.kubernetes.io/managed-by={{ $.Release.Service }}
 ldb.worker.batch.local.dir={{ include "batchWorkerLocalDir" . | trimAll "," }}
 ldb.monitor.reporter.promgateway.host={{ include "linkoopdb.name" . }}-metrics-pushgateway
