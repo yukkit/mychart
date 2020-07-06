@@ -113,7 +113,7 @@ spec:
             - name: LINKOOPDB_STREAM_WORK_DEBUG_WEB_PORT
               value: {{ .Values.stream.streamWorker.ports.workerPort | default 7778 | quote }}
             - name: LINKOOPDB_EXTRA_JDBC_LIB
-              value: {{ .Values.stream.streamWorker.libPath }}
+              value: {{ .Values.nfs.mountPath | default "/fsshare"  }}/{{ .Values.nfs.libPath | default "lib" }}
           resources:
 {{ toYaml .Values.stream.streamWorker.resources | indent 12 }}
 {{- end }}

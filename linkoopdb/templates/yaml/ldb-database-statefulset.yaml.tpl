@@ -169,9 +169,9 @@ spec:
             - name: LINKOOPDB_LOGS_DIR # log dir
               value: /opt/logs
             - name: EXTRA_LIBS # spark use
-              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/driver
+              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/{{ $.Values.nfs.libPath | default "lib" }}
             - name: ALL_EXTRA_CLASSPATH # server use
-              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/driver/*:/opt/linkoopdb/ext-jars/*
+              value: {{ $.Values.nfs.mountPath | default "/fsshare"  }}/{{ $.Values.nfs.libPath | default "lib" }}/*:{{ $.Values.nfs.mountPath | default "/fsshare"  }}/{{ $.Values.nfs.extLibPath | default "extlib" }}/*
             - name: LINKOOPDB_JVM_OPTS
               value: {{ $.Values.database.config.jvmOpts }}
             - name: EXTERNAL_K8S_PORT

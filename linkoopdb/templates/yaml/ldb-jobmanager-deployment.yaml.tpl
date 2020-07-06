@@ -108,7 +108,7 @@ spec:
             - name: JOB_MANAGER_RPC_ADDRESS
               value: {{ include "linkoopdb.name" . }}-stream-jobmanager
             - name: HADOOP_CLASSPATH
-              value: {{ .Values.stream.jobmanager.libPath | default .Values.stream.streamWorker.libPath}}
+              value: {{ .Values.nfs.mountPath | default "/fsshare"  }}/{{ .Values.nfs.extLibPath | default "extlib" }}
             - name: HADOOP_USER_NAME
               value: {{ .Values.hadoop.user | default "hdfs" }}
             - name: YARN_CONF_DIR

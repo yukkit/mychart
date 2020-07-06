@@ -24,13 +24,19 @@ license:
   host: license.datapps.com
   port: 7700
 
+## Nfs server for ldb to access extlib ...
 nfs:
   create: false
-  mountPath:
-  storage:
+  ## share path of nfs
   path:
+  ## k8s node name
   node:
-  reclaimPolicy:
+#  reclaimPolicy: Delete
+#  mountPath: /fsshare
+#  extLibPath: extlib
+#  libPath: lib
+#  kafkaLibPath: kafka
+#  storage: 100Gi
 
 #ldbDist:
 #  - domain:
@@ -38,13 +44,20 @@ nfs:
 #    node:
 #    rootPath:
 
+## Shuffle service for database worker
 shuffleService:
   create: true
+  ## shuffle data storage directory, you can set multi dir
   localDir:
-    disk1: /tmp/spark-local
+    disk1: /tmp/worker-local
+  #  disk2: /tmp/worker-local2
   resources:
-    limits: {}
     requests: {}
+    #  cpu: 4000m
+    #  memory: 6Gi
+    limits: {}
+    #  cpu: 6000m
+    #  memory: 12Gi
 
 metastore:
   ## Only support LINKOOPDB/MYSQL. Default LINKOOPDB
@@ -98,7 +111,7 @@ database:
   ## Default 1
   replicas:
   ## The NodeAffinity setting of the example ensure that the database server pods can only be scheduled to nodes
-  ## with label:[linkoopdb/dbserver="true"],
+  ## with label:[linkoopdb/dbserver="true"]
   nodeAffinity:
     key: linkoopdb/dbserver
     value: true
@@ -126,16 +139,22 @@ database:
     jvmOpts:
     ## Hive dblink support, with "enableHiveSupport: true" you should ensure hive-site.xml in hadoop.confPath.conf
     enableHiveSupport:
-    ## If your hdfs
+    ## Security Configuration，kerberos credentials path, and ensure krb5.conf in hadoop.confPath.conf
     keytab:
+  ## Database server pod resource config
   resources:
-    limits: {}
     requests: {}
+    #  cpu: 4000m
+    #  memory: 6Gi
+    limits: {}
+    #  cpu: 8000m
+    #  memory: 16Gi
 
+## Database default resourceGroup config. Please refer to user-guide-doc for the config rule of resourceGroup
 batchWorker:
   resources:
     cluster:
-      queue:
+    #  queue:
       totalMemory:
       totalCpuCores:
       numNodes:
@@ -153,43 +172,73 @@ batchWorker:
 
 stream:
   create: true
+  ## The NodeAffinity setting of the example ensure that the stream worker pods can only be scheduled to nodes
+  ## with label:[linkoopdb/stream="true"]
   nodeAffinity:
     key: linkoopdb/stream
     values: true
+  ## Stream Configuration
   config:
+  #  state.backend: filesystem
+  #  taskmanager.numberOfTaskSlots: 5
+  #  parallelism.default: 5
   streamWorker:
-    kafkaLibPath:
-    libPath:
     ports:
+      ## workerPort for stream server, type is clusterIP, default 7778
       workerPort:
     resources:
-      limits: {}
       requests: {}
+      #  cpu: 4000m
+      #  memory: 6Gi
+      limits: {}
+      #  cpu: 8000m
+      #  memory: 12Gi
   debugWorker:
+    ## Pod number of debugWorker
     replicas:
     ports:
       workerPort:
     resources:
-      limits: {}
       requests: {}
+      #  cpu: 4000m
+      #  memory: 6Gi
+      limits: {}
+      #  cpu: 8000m
+      #  memory: 12Gi
   jobmanager:
     ports:
+      ## Web ui port
       ui:
     resources:
-      limits: {}
       requests: {}
+      #  cpu: 4000m
+      #  memory: 6Gi
+      limits: {}
+      #  cpu: 8000m
+      #  memory: 12Gi
   taskmanager:
-    replicas:
+    ## Pod number of stream taskmanager, default 1
+    replicas: 1
     resources:
-      limits: {}
       requests: {}
+      #  cpu: 4000m
+      #  memory: 6Gi
+      limits: {}
+      #  cpu: 8000m
+      #  memory: 12Gi
 
+## Linkoopdb monitor
 metrics:
+  ## If you set "create: true", the pods related to monitoring will be created
   create: true
   monitor:
     resources:
-      limits: {}
       requests: {}
+      #  cpu: 1000m
+      #  memory: 2Gi
+      limits: {}
+      #  cpu: 2000m
+      #  memory: 4Gi
   pushgateway:
     image:
       repository: prom/pushgateway
@@ -198,8 +247,8 @@ metrics:
       pullPolicy:
     nodePorts:
       pushgateway: 30091
-    randomJobnameSuffix: false
-    deleteOnShutdown: false
+  #  randomJobnameSuffix: false
+  #  deleteOnShutdown: false
     resources:
       limits: {}
       requests: {}
